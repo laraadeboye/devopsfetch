@@ -89,6 +89,14 @@ fi
 # Logging After Root Check
 log "Permission check passed. Proceeding with installation..."
 
+# Check for unsupported flags and prompt to use -y
+if [[ "$1" != "" && "$1" != "-y" ]]; then
+    echo "Unsupported flag detected. Please use the -y flag for installation."
+    log "Unsupported flag detected. Installation aborted."
+    exit 1
+fi
+
+
 # Confirm installation
 confirm_installation "$1"
 
