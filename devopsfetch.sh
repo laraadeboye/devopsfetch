@@ -1,117 +1,161 @@
 #!/bin/bash
 
-LOG_FILE="/var/log/devopsfetch.log"
+LOG_FILE="/var/log/devopsfetch-install.log"
 
-# Function to log messages
 log() {
-    echo "$(date +'%Y-%m-%d %H:%M:%S') - $1" | tee -a "$LOG_FILE"
+    echo "$(date +'%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
 }
 
-# Function to display help
-display_help() {
-    cat << EOF
-Usage: $0 [option] [argument]
-
-Options:
-  -p, --port [port_number]     Display all active ports and services or detailed information about a specific port.
-  -d, --docker [container_name] List all Docker images and containers or detailed information about a specific container.
-  -n, --nginx [domain]         Display all Nginx domains and their ports or detailed configuration information for a specific domain.
-  -u, --users [username]       List all users and their last login times or detailed information about a specific user.
-  -t, --time [time_range]      Display activities within a specified time range.
-  -h, --help                   Display this help and exit.
-EOF
-}
-
-# Function to check if a command exists
-command_exists() {
+check_command_exists() {
     command -v "$1" &> /dev/null
 }
 
-# Function to check permissions
-check_permissions() {
-    if [[ $EUID -ne 0 ]]; then
-        log "Permission denied: Please run as root."
-        exit 1
-    fi
-}
-
-# Function to display active ports and services
-show_ports() {
-    if [ -z "$1" ]; then
-        netstat -tuln | awk 'NR>2 {print $1, $4, $7}' | column -t | awk '{printf "%-10s %-25s %-30s\n", $1, $2, $3}'
-    else
-        netstat -tuln | grep ":$1 " | awk '{print $1, $4, $7}' | column -t | awk '{printf "%-10s %-25s %-30s\n", $1, $2, $3}'
-    fi
-}
-
-# Function to display Docker images and containers
-show_docker() {
-    if [ -z "$1" ]; then
-        docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.ImageID}}\t{{.CreatedAt}}\t{{.Size}}"
-        docker ps --format "table {{.Names}}\t{{.Image}}\t{{.ID}}\t{{.Status}}\t{{.Ports}}"
-    else
-        docker inspect "$1" | jq '.'
-    fi
-}
-
-# Function to display Nginx domains and ports
-show_nginx() {
-    config_dirs=("/etc/nginx/sites-available" "/etc/nginx/conf.d")
-    for dir in "${config_dirs[@]}"; do
-        if [ -d "$dir" ]; then
-            if [ -z "$1" ]; then
-                grep -E 'server_name|listen' "$dir"/* | awk '{print $2, $3}' | column -t | awk '{printf "%-25s %-15s\n", $1, $2}'
-            else
-                grep -A 10 "server_name $1;" "$dir"/* | column -t
-            fi
+check_and_install_dependencies() {
+    dependencies=("net-tools" "jq" "nginx")
+    for dep in "${dependencies[@]}"; do
+        if ! check_command_exists "$dep"; then
+            log "$dep not found. Installing..."
+            apt-get install -y "$dep" &>> "$LOG_FILE" || log "Failed to install $dep."
+        else
+            log "$dep is already installed."
         fi
+    done
+    
+    if ! check_command_exists "docker"; then
+        log "docker not found. Installing..."
+        apt-get remove -y docker docker-engine docker.io containerd runc &>> "$LOG_FILE" || log "Failed to remove old docker versions."
+        apt-get update &>> "$LOG_FILE" || log "Failed to update package list."
+        apt-get install -y ca-certificates curl gnupg &>> "$LOG_FILE" || log "Failed to install dependencies for Docker."
+        install -m 0755 -d /etc/apt/keyrings
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg || log "Failed to download Docker GPG key."
+        chmod a+r /etc/apt/keyrings/docker.gpg
+        echo \
+          "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+          $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
+        apt-get update &>> "$LOG_FILE" || log "Failed to update package list."
+        apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin &>> "$LOG_FILE" || log "Failed to install Docker."
+    else
+        log "docker is already installed."
+    fi
+}
+
+confirm_installation() {
+    if [[ "$1" != "-y" ]]; then
+        read -p "This will install and configure devopsfetch. Do you wish to proceed? (y/n) " response
+        case "$response" in
+            [yY][eE][sS]|[yY]) 
+                echo "Proceeding with iterative installation."
+                log "Proceeding with installation."
+                ;;
+            *)
+                echo "Installation aborted."
+                log "Installation aborted."
+                exit 0
+                ;;
+        esac
+    else
+        echo "Proceeding with automatic installation due to -y flag."
+        log "Proceeding with installation due to -y flag."
+    fi
+}
+
+cleanup() {
+    echo "Performing cleanup..."
+    log "Performing cleanup..."
+    # Add any cleanup steps if needed
+}
+
+# Initial Echo Statement
+echo "Starting devopsfetch installation..."
+
+# Root Check and Early Exit
+if [[ $EUID -ne 0 ]]; then
+    echo "Permission denied: Please run as root."
+    exit 1
+fi
+
+# Logging After Root Check
+log "Permission check passed. Proceeding with installation..."
+
+# Confirm installation
+confirm_installation "$1"
+
+# Display progress message
+progress_message() {
+    local steps=("Copying devopsmainfetch script" "Setting up log rotation" "Creating systemd service" "Starting devopsfetch service")
+    echo "Installation in progress, please wait..."
+    sleep 3
+    local step_index=0
+    while true; do
+        echo -n "${steps[$step_index]}..."
+        sleep 2.5
+        echo -ne "\r"
+        step_index=$(( (step_index + 1) % ${#steps[@]} ))
     done
 }
 
-# Function to display users and last login times
-show_users() {
-    if [ -z "$1" ]; then
-        last | head -n -2 | column -t | awk '{printf "%-20s %-20s %-20s %-30s\n", $1, $3, $4, $5 " " $6 " " $7 " " $8 " " $9}'
-    else
-        last | grep "$1" | column -t | awk '{printf "%-20s %-20s %-20s %-30s\n", $1, $3, $4, $5 " " $6 " " $7 " " $8 " " $9}'
-    fi
-}
+# Start progress message in background
+progress_message &
 
-# Function to display activities within a specified time range
-show_time_range() {
-    journalctl --since "$1" | column -t
-}
+# Store the PID of the progress message function
+progress_pid=$!
 
-# Main function to handle options
-main() {
-    check_permissions
-    case "$1" in
-        -p|--port)
-            show_ports "$2"
-            ;;
-        -d|--docker)
-            command_exists docker || { log "Docker command not found."; exit 1; }
-            show_docker "$2"
-            ;;
-        -n|--nginx)
-            command_exists nginx || { log "Nginx command not found."; exit 1; }
-            show_nginx "$2"
-            ;;
-        -u|--users)
-            show_users "$2"
-            ;;
-        -t|--time)
-            show_time_range "$2"
-            ;;
-        -h|--help)
-            display_help
-            ;;
-        *)
-            log "Invalid option: $1"
-            display_help
-            exit 1
-            ;;
-    esac
-}
+# Update package list and log output
+apt-get update &>> "$LOG_FILE" || { log "Failed to update package list. Continuing with installation."; }
 
-main "$@"
+# Install dependencies and log output
+check_and_install_dependencies
+
+# Copy devopsmainfetch script to /usr/local/bin and make it executable
+cp devopsmainfetch.sh /usr/local/bin/devopsfetch &>> "$LOG_FILE" || log "Failed to copy devopsmainfetch script."
+chmod +x /usr/local/bin/devopsfetch &>> "$LOG_FILE" || log "Failed to make devopsfetch script executable."
+
+# Create log file and set permissions
+touch /var/log/devopsfetch.log &>> "$LOG_FILE" || log "Failed to create log file."
+chmod 644 /var/log/devopsfetch.log &>> "$LOG_FILE" || log "Failed to set log file permissions."
+
+# Set up log rotation
+cat << EOF > /etc/logrotate.d/devopsfetch
+/var/log/devopsfetch.log {
+    daily
+    rotate 7
+    compress
+    missingok
+    notifempty
+    create 644 root root
+}
+EOF
+
+# Create systemd service file
+cat << EOF > /etc/systemd/system/devopsfetch.service
+[Unit]
+Description=Devopsfetch Service
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/devopsfetch
+StandardOutput=journal
+StandardError=journal
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Reload systemd and enable the service
+systemctl daemon-reload &>> "$LOG_FILE" || log "Failed to reload systemd."
+systemctl enable devopsfetch.service &>> "$LOG_FILE" || log "Failed to enable devopsfetch service."
+systemctl start devopsfetch.service &>> "$LOG_FILE" || log "Failed to start devopsfetch service."
+
+log "Systemd service started"
+
+# Display completion message with usage hint
+echo "Installation completed." 
+echo "For help, enter: sudo devopsfetch -h"
+log "Installation completed."
+
+# Stop progress message function
+kill "$progress_pid"
+
+# Cleanup
+#cleanup

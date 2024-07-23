@@ -95,5 +95,5 @@ sudo devopsfetch -h
 The devopsfetch tool is configured to run as a systemd service for continuous monitoring. You can view the service logs using journalctl:
 
 ```sh
-journalctl -u devopsfetch.service
+sudo journalctl -u devopsfetch.service
 ```
