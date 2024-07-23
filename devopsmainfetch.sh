@@ -38,8 +38,10 @@ check_permissions() {
 # Function to display active ports and services
 show_ports() {
     if [[ -z "$1" ]]; then
+        echo "Protocol      Local Address             PID/Program"
         netstat -tuln | awk 'NR>2 {print $1, $4, $7}' | column -t | awk '{printf "%-10s %-25s %-30s\n", $1, $2, $3}'
     else
+        echo "Protocol      Local Address             PID/Program"
         netstat -tuln | grep ":$1 " | awk '{print $1, $4, $7}' | column -t | awk '{printf "%-10s %-25s %-30s\n", $1, $2, $3}'
     fi
 }
@@ -63,6 +65,7 @@ show_nginx() {
     for dir in "${config_dirs[@]}"; do
         if [[ -d "$dir" ]]; then
             if [[ -z "$1" ]]; then
+                echo "Nginx Domains and Ports:"
                 echo "Domain                         Port"
                 echo "----------------------------   ----"
                 grep -E 'server_name|listen' "$dir"/* | awk '{print $2, $3}' | column -t | awk '{printf "%-25s %-15s\n", $1, $2}'
@@ -76,6 +79,7 @@ show_nginx() {
 # Function to display users and last login times
 show_users() {
     if [[ -z "$1" ]]; then
+        echo "Users and Last Login Times:"
         echo "Username              TTY                  From                 Login Time"
         echo "--------------------  ------------------  ------------------  ----------------------------------"
         last | head -n -2 | column -t | awk '{printf "%-20s %-20s %-20s %-30s\n", $1, $3, $4, $5 " " $6 " " $7 " " $8 " " $9}'
