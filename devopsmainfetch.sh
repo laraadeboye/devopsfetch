@@ -59,19 +59,24 @@ show_docker() {
     fi
 }
 
-# Function to display Nginx domains and ports
+
 show_nginx() {
     config_dirs=("/etc/nginx/sites-available" "/etc/nginx/conf.d")
+    echo "Nginx Configuration:"
+    echo "------------------------------------------------------------------"
+    printf "%-25s %-10s %-30s %-30s\n" "Domain" "Port" "Proxy" "Configuration File"
+    echo "------------------------------------------------------------------"
+
     for dir in "${config_dirs[@]}"; do
         if [[ -d "$dir" ]]; then
-            if [[ -z "$1" ]]; then
-                echo "Nginx Domains and Ports:"
-                echo "Domain                         Port"
-                echo "----------------------------   ----"
-                grep -E 'server_name|listen' "$dir"/* | awk '{print $2, $3}' | column -t | awk '{printf "%-25s %-15s\n", $1, $2}'
-            else
-                grep -A 10 "server_name $1;" "$dir"/* | column -t
-            fi
+            for file in "$dir"/*; do
+                domain=$(grep -E '^\s*server_name\s+' "$file" | awk '{print $2}')
+                port=$(grep -E '^\s*listen\s+' "$file" | awk '{print $2}')
+                proxy=$(grep -E '^\s*proxy_pass\s+' "$file" | awk '{print $2}')
+                if [[ -n "$domain" || -n "$port" || -n "$proxy" ]]; then
+                    printf "%-25s %-10s %-30s %-30s\n" "$domain" "$port" "$proxy" "$file"
+                fi
+            done
         fi
     done
 }
