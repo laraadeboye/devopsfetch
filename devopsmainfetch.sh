@@ -53,7 +53,7 @@ show_docker() {
         docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.ID}}\t{{.CreatedAt}}\t{{.Size}}" | column -t
         echo ""
         echo "Docker Containers:"
-        docker ps --format "table {{.Names}}\t{{.Image}}\t{{.ID}}\t{{.Status}}\t{{.Ports}}" | column -t
+        docker ps -a --format "table {{.Names}}\t{{.Image}}\t{{.ID}}\t{{.Status}}\t{{.Ports}}" | column -t
     else
         docker inspect "$1" | jq '.'
     fi
