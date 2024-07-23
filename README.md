@@ -33,11 +33,11 @@ Run the installation script to install the `devopsfetch` tool and set up the sys
 
 **Interactive Installation**
 ```sh
-sudo ./devopsfetch-install.sh
+sudo ./devopsfetch.sh
 ```
 **Automatic Installation**
 ```sh
-sudo ./devopsfetch-install.sh -y
+sudo ./devopsfetch.sh -y
 ```
 
 ## Usage
@@ -83,7 +83,7 @@ sudo devopsfetch -u username
 ```
 **Display Activities Within a Specified Time Range**
 ```sh
-sudo devopsfetch -t "2024-07-01"
+sudo devopsfetch -t "2024-07-23"
 ```
 **Display Help**
 To display usage instructions:
