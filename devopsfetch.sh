@@ -1,6 +1,7 @@
 #!/bin/bash
 
 LOG_FILE="/var/log/devopsfetch-install.log"
+TEMP_DIR="/tmp/devopsfetch"
 
 log() {
     echo "$(date +'%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE"
@@ -44,7 +45,7 @@ confirm_installation() {
         read -p "This will install and configure devopsfetch. Do you wish to proceed? (y/n) " response
         case "$response" in
             [yY][eE][sS]|[yY]) 
-                echo "Proceeding with iterative installation."
+                echo "Proceeding with interactive installation."
                 log "Proceeding with installation."
                 ;;
             *)
@@ -60,10 +61,21 @@ confirm_installation() {
 }
 
 cleanup() {
-    echo "Performing cleanup..."
     log "Performing cleanup..."
-    # Add any cleanup steps if needed
+
+    # Remove temporary files created during installation
+    if [ -d "$TEMP_DIR" ]; then
+        rm -rf "$TEMP_DIR"
+        log "Removed temporary directory $TEMP_DIR."
+    fi
+
+    # Clean up APT cache
+    apt-get clean
+    log "Cleaned up APT cache."
+
+    log "Cleanup completed."
 }
+
 
 # Initial Echo Statement
 echo "Starting devopsfetch installation..."
@@ -151,7 +163,7 @@ log "Systemd service started"
 
 # Display completion message with usage hint
 echo "Installation completed." 
-echo "For help, enter: sudo devopsfetch -h"
+echo "For help, enter: sudo devopsfetch --help"
 log "Installation completed."
 
 # Stop progress message function
