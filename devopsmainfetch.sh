@@ -1,6 +1,6 @@
 #!/bin/bash
 
-LOG_FILE="/var/log/devopsfetch.log"
+LOG_FILE="/var/log/devopsmainfetch.log"
 
 # Function to log messages
 log() {

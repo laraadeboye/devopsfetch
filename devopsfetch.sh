@@ -1,6 +1,6 @@
 #!/bin/bash
 
-LOG_FILE="/var/log/devopsfetch-install.log"
+LOG_FILE="/var/log/devopsfetch.log"
 TEMP_DIR="/tmp/devopsfetch"
 
 log() {
