@@ -80,12 +80,16 @@ cleanup() {
 echo "Starting devopsfetch installation..."
 
 # Root Check and Early Exit
+echo "EUID: $EUID"
 if [[ $EUID -ne 0 ]]; then
-    echo "Permission denied: Please run as root or with elevated privileges(sudo)."
+    echo "Permission denied: Please run as root or with elevated privileges (sudo)."
     exit 1
+else
+    echo "Root check passed. Proceeding with installation..."
 fi
 
 # Logging After Root Check
+log "Root check: $EUID"
 log "Permission check passed. Proceeding with installation..."
 
 # Check for unsupported flags and prompt to use -y
