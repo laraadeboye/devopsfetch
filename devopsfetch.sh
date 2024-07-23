@@ -76,13 +76,12 @@ cleanup() {
     log "Cleanup completed."
 }
 
-
 # Initial Echo Statement
 echo "Starting devopsfetch installation..."
 
 # Root Check and Early Exit
 if [[ $EUID -ne 0 ]]; then
-    echo "Permission denied: Please run as root."
+    echo "Permission denied: Please run as root or with elevated privileges(sudo)."
     exit 1
 fi
 
@@ -95,7 +94,6 @@ if [[ "$1" != "" && "$1" != "-y" ]]; then
     log "Unsupported flag detected. Installation aborted."
     exit 1
 fi
-
 
 # Confirm installation
 confirm_installation "$1"
@@ -169,13 +167,19 @@ systemctl start devopsfetch.service &>> "$LOG_FILE" || log "Failed to start devo
 
 log "Systemd service started"
 
+
 # Display completion message with usage hint
-echo "Installation completed." 
-echo "For help, enter: sudo devopsfetch --help"
+echo -e "\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+echo -e "Installation completed! Use 'devopsfetch' to run the tool. E.g sudo devopsfetch -d"
+echo -e "View Detailed logs in /var/log/devopsfetch.log"
+echo -e "For detailed usage instructions, refer to the documentation."
+echo -e "For help, enter: sudo devopsfetch --help."
+echo -e "\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
 log "Installation completed."
 
-# Stop progress message function
-kill "$progress_pid"
+# Stop the progress message
+kill $progress_pid
+wait $progress_pid 2>/dev/null
 
-# Cleanup
-#cleanup
+# Perform cleanup
+cleanup

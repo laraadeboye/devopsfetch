@@ -85,6 +85,12 @@ sudo devopsfetch -u username
 ```sh
 sudo devopsfetch -t "2024-07-23"
 ```
+You can also display information by piping the output to less by adding terminal commands like | less or |more at the end of the command. This will allow you to scroll up and down using the arrow keys or j and k and see the descriptive column headings.
+
+```sh
+sudo devopsfetch -t 2024-07-18 2024-07-22 | less
+```
+
 **Display Help**
 To display usage instructions:
 
