@@ -1,6 +1,6 @@
 #!/bin/bash
 
-LOG_FILE="/var/log/devopsmainfetch.log"
+LOG_FILE="/var/log/devopsfetch.log"
 
 # Function to log messages
 log() {
@@ -228,6 +228,8 @@ show_time_range() {
 # Main function to handle options
 main() {
     check_permissions
+
+   
     case "$1" in
         -p|--port)
             show_ports "$2"
@@ -258,7 +260,8 @@ main() {
             exit 0
             ;;
         *)
-            log "Invalid option: $1"
+            log "Invalid option detected: $1"
+            echo -e "\nYou have entered an invalid option: $1\n"
             display_help
             exit 1
             ;;

@@ -173,12 +173,12 @@ log "Systemd service started"
 
 
 # Display completion message with usage hint
-echo -e "\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+echo -e "\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
 echo -e "Installation completed! Use 'devopsfetch' to run the tool. E.g sudo devopsfetch -d"
 echo -e "View Detailed logs in /var/log/devopsfetch.log"
 echo -e "For detailed usage instructions, refer to the documentation: https://github.com/laraadeboye/devopsfetch/wiki"
 echo -e "For help, enter: sudo devopsfetch --help."
-echo -e "\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
+echo -e "\n\n~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
 log "Installation completed."
 
 # Stop the progress message
