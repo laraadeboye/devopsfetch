@@ -109,7 +109,7 @@ progress_message() {
     sleep 3
     local step_index=0
     while true; do
-        echo -n "${steps[$step_index]}..."
+        echo -n "${steps[$step_index]}.."
         sleep 2.5
         echo -ne "\r"
         step_index=$(( (step_index + 1) % ${#steps[@]} ))
