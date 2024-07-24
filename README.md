@@ -15,7 +15,7 @@ Devopsfetch is a shell script tool designed for system information retrieval and
 ## Requirements
 
 - Ubuntu or Debian-based system
-- Root privileges
+- Root privileges or elevated privileges (using sudo)
 
 ## Installation
 
