@@ -16,6 +16,15 @@ Devopsfetch is a shell script tool designed for system information retrieval and
 
 - Ubuntu or Debian-based system
 - Root privileges or elevated privileges (using sudo)
+  
+You can switch to the root user by running:
+```bash
+sudo su
+```
+or run `sudo <command>` where <command> represent the command you want run.
+```bash
+sudo devopsfetch -h
+```
 
 ## Installation
 
@@ -33,73 +42,73 @@ Run the installation script to install the `devopsfetch` tool and set up the sys
 
 **Interactive Installation**
 ```sh
-sudo ./devopsfetch.sh
+./devopsfetch.sh
 ```
 **Automatic Installation**
 ```sh
-sudo ./devopsfetch.sh -y
+./devopsfetch.sh -y
 ```
 
 ## Usage
 **Display All Active Ports and Services**
 
 ```sh
-sudo devopsfetch -p
+devopsfetch -p
 ```
 To get detailed information about a specific port:
 
 ```sh
-sudo devopsfetch -p 80
+devopsfetch -p 80
 ```
 
 **List All Docker Images and Containers**
 ```sh
-sudo devopsfetch -d
+devopsfetch -d
 ```
 To get detailed information about a specific container:
 
 ```sh
-sudo devopsfetch -d container_name
+devopsfetch -d container_name
 ```
 
 **Display All Nginx Domains and Their Ports**
 
 ```sh
-sudo devopsfetch -n
+devopsfetch -n
 ```
 To get detailed configuration information for a specific domain:
 
 ```sh
-sudo devopsfetch -n domain_name
+devopsfetch -n domain_name
 ```
 **List All Users and Their Last Login Times**
 ```sh
-sudo devopsfetch -u
+devopsfetch -u
 ```
 To get detailed information about a specific user:
 
 ```sh
-sudo devopsfetch -u username
+devopsfetch -u username
 ```
 **Display Activities Within a Specified Time Range**
 ```sh
-sudo devopsfetch -t "2024-07-23"
+devopsfetch -t "2024-07-23"
 ```
 You can also display information by piping the output to less by adding terminal commands like | less or |more at the end of the command. This will allow you to scroll up and down using the arrow keys or j and k and see the descriptive column headings.
 
 ```sh
-sudo devopsfetch -t 2024-07-18 2024-07-22 | less
+devopsfetch -t 2024-07-18 2024-07-22 | less
 ```
 
 **Display Help**
 To display usage instructions:
 
 ```sh
-sudo devopsfetch -h
+devopsfetch -h
 ```
 **Logs and Monitoring**
 The devopsfetch tool is configured to run as a systemd service for continuous monitoring. You can view the service logs using journalctl:
 
 ```sh
-sudo journalctl -u devopsfetch.service
+journalctl -u devopsfetch.service
 ```
