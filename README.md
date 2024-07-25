@@ -21,7 +21,7 @@ You can switch to the root user by running:
 ```bash
 sudo su
 ```
-or run `sudo <command>` where <command> represent the command you want run.
+or run `sudo <command>` where `<command>` represent the command you want run.
 ```bash
 sudo devopsfetch -h
 ```
